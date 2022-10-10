@@ -1,0 +1,36 @@
+<head>
+<script type="module">
+import { Octokit, App } from "https://cdn.skypack.dev/octokit";
+
+const token = localStorage.getItem('TOKEN')
+const octokit = new Octokit({
+  auth: token
+});
+
+
+try {
+  const result = await octokit.request("GET /repos/{owner}/{repo}/pulls", {
+      owner: "Shikaga",
+      repo: "ABetterAgileBoard",
+    });
+
+  document.getElementById('review').innerHTML = result.data.reduce((left, right) => (left + right.title + "|"), "");
+
+  const titleAndAuthor = result.data.map(({ title }) => ({ title }))
+
+  console.log(titleAndAuthor)
+
+} catch (error) {
+  console.log(`Error! Status: ${error.status}. Message: ${error.response.data.message}`)
+}
+
+</script>
+</head>
+<body>
+<div>Hello World!</div>
+<div id='todo'>Todo</div>
+<div id='in-dev'>In Dev</div>
+<div id='review'>Review</div>
+<div id='awaiting-merge'>Awaiting Merge</div>
+<div id='done'>Done</div>
+</body>

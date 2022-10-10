@@ -9,13 +9,23 @@
 
   let branches = [];
 
+  function moveBranchToPR(branchName) {
+    branches.forEach((branch) => {
+      if (branch.name == branchName) {
+        branch.location = 'PR'
+      }
+    })
+  }
+
   async function getPullRequests() {
     const result = await octokit.request("GET /repos/{owner}/{repo}/pulls", {
       owner: "Shikaga",
       repo: "ABetterAgileBoard",
     });
-    debugger;
-    //document.getElementById('review').innerHTML = result.data.reduce((left, right) => (left + right.title + "|"), "");
+    result.data.forEach((pr) => {
+      debugger;
+      moveBranchToPR(pr.head.ref)
+    })
   }
 
   async function getBranches() {
@@ -24,10 +34,21 @@
       repo: "ABetterAgileBoard",
     });
     branches = result.data;
+    branches.forEach((branch) => {
+      branch.location = "DEV"
+    })
   }
 
   function drawColumns() {
-    document.getElementById('review').innerHTML = "Test"
+    branches.forEach((branch) => {
+      if (branch.location == "DEV") {
+        document.getElementById('in-dev').innerHTML += branch.name
+      } else if (branch.location == "PR") {
+        document.getElementById('review').innerHTML += branch.name
+      }
+    })
+
+    
   }
 
   try {
@@ -46,8 +67,8 @@
 <body>
 <div>Hello World!</div>
 <div id='todo'>Todo</div>
-<div id='in-dev'>In Dev</div>
-<div id='review'>Review</div>
+<div id='in-dev'>In Dev | </div>
+<div id='review'>Review | </div>
 <div id='awaiting-merge'>Awaiting Merge</div>
 <div id='done'>Done</div>
 </body>

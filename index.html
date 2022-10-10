@@ -1,28 +1,45 @@
 <head>
 <script type="module">
-import { Octokit, App } from "https://cdn.skypack.dev/octokit";
+  import { Octokit, App } from "https://cdn.skypack.dev/octokit";
 
-const token = localStorage.getItem('TOKEN')
-const octokit = new Octokit({
-  auth: token
-});
+  const token = localStorage.getItem('TOKEN')
+  const octokit = new Octokit({
+    auth: token
+  });
 
+  let branches = [];
 
-try {
-  const result = await octokit.request("GET /repos/{owner}/{repo}/pulls", {
+  async function getPullRequests() {
+    const result = await octokit.request("GET /repos/{owner}/{repo}/pulls", {
       owner: "Shikaga",
       repo: "ABetterAgileBoard",
     });
+    debugger;
+    //document.getElementById('review').innerHTML = result.data.reduce((left, right) => (left + right.title + "|"), "");
+  }
 
-  document.getElementById('review').innerHTML = result.data.reduce((left, right) => (left + right.title + "|"), "");
+  async function getBranches() {
+    const result = await octokit.request("GET /repos/{owner}/{repo}/branches", {
+      owner: "Shikaga",
+      repo: "ABetterAgileBoard",
+    });
+    branches = result.data;
+  }
 
-  const titleAndAuthor = result.data.map(({ title }) => ({ title }))
+  function drawColumns() {
+    document.getElementById('review').innerHTML = "Test"
+  }
 
-  console.log(titleAndAuthor)
+  try {
+    getBranches()
+      .then(() => getPullRequests())
+      .then(() => {drawColumns()})
+    ;
 
-} catch (error) {
-  console.log(`Error! Status: ${error.status}. Message: ${error.response.data.message}`)
-}
+
+  } catch (error) {
+    console.log(`Error! Status: ${error.status}. Message: ${error.response.data.message}`)
+  }
 
 </script>
 </head>

@@ -1,59 +1,36 @@
 <head>
 <script type="module">
-  import { Octokit, App } from "https://cdn.skypack.dev/octokit";
+  import { GitHubHandler } from './GitHubHandler.js';
 
-  const token = localStorage.getItem('TOKEN')
-  const octokit = new Octokit({
-    auth: token
-  });
+  const owner = localStorage.getItem('OWNER');
+  const repo = localStorage.getItem('REPO');
+  const token = localStorage.getItem('TOKEN');
 
-  let branches = [];
 
-  function moveBranchToPR(branchName) {
-    branches.forEach((branch) => {
-      if (branch.name == branchName) {
-        branch.location = 'PR'
-      }
-    })
-  }
-
-  async function getPullRequests() {
-    const result = await octokit.request("GET /repos/{owner}/{repo}/pulls", {
-      owner: "Shikaga",
-      repo: "ABetterAgileBoard",
-    });
-    result.data.forEach((pr) => {
-      debugger;
-      moveBranchToPR(pr.head.ref)
-    })
-  }
-
-  async function getBranches() {
-    const result = await octokit.request("GET /repos/{owner}/{repo}/branches", {
-      owner: "Shikaga",
-      repo: "ABetterAgileBoard",
-    });
-    branches = result.data;
-    branches.forEach((branch) => {
-      branch.location = "DEV"
-    })
+  function clearColumns() {
+    document.getElementById('in-dev').innerHTML = "In Dev | "
+    document.getElementById('review').innerHTML = "Review | "
+    document.getElementById('awaiting-merge').innerHTML = "Awaiting Merge | "
   }
 
   function drawColumns() {
-    branches.forEach((branch) => {
+    clearColumns();
+    gitHubHandler.branches.forEach((branch) => {
       if (branch.location == "DEV") {
-        document.getElementById('in-dev').innerHTML += branch.name
+        document.getElementById('in-dev').innerHTML += "<div>" + branch.name + "</div>"
       } else if (branch.location == "PR") {
-        document.getElementById('review').innerHTML += branch.name
+        document.getElementById('review').innerHTML += "<div>" + branch.name + "</div>"
+      } else if (branch.location == "AM") {
+        document.getElementById('awaiting-merge').innerHTML += "<div>" + branch.name + "</div>"
       }
     })
-
-    
   }
 
+  const gitHubHandler = new GitHubHandler(owner, repo, token, drawColumns);
+
   try {
-    getBranches()
-      .then(() => getPullRequests())
+    gitHubHandler.getBranches()
+      .then(() => gitHubHandler.getPullRequests())
       .then(() => {drawColumns()})
     ;
 
@@ -67,8 +44,12 @@
 <body>
 <div>Hello World!</div>
 <div id='todo'>Todo</div>
+<br />
 <div id='in-dev'>In Dev | </div>
-<div id='review'>Review | </div>
+<br />
+<div id='review'> | </div>
+<br />
 <div id='awaiting-merge'>Awaiting Merge</div>
+<br />
 <div id='done'>Done</div>
 </body>

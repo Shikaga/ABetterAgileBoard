@@ -1,43 +1,47 @@
 <head>
 <script type="module">
-  import { GitHubHandler } from './GitHubHandler.js';
+	import { GitHubHandler } from './GitHubHandler.js';
+	import { JiraHandler } from './JiraHandler.js'
+	import { DataCombiner } from './DataCombiner.js'
 
-  const owner = localStorage.getItem('OWNER');
-  const repo = localStorage.getItem('REPO');
-  const token = localStorage.getItem('TOKEN');
-
-
-  function clearColumns() {
-    document.getElementById('in-dev').innerHTML = "In Dev | "
-    document.getElementById('review').innerHTML = "Review | "
-    document.getElementById('awaiting-merge').innerHTML = "Awaiting Merge | "
-  }
-
-  function drawColumns() {
-    clearColumns();
-    gitHubHandler.branches.forEach((branch) => {
-      if (branch.location == "DEV") {
-        document.getElementById('in-dev').innerHTML += "<div>" + branch.name + "</div>"
-      } else if (branch.location == "PR") {
-        document.getElementById('review').innerHTML += "<div>" + branch.name + "</div>"
-      } else if (branch.location == "AM") {
-        document.getElementById('awaiting-merge').innerHTML += "<div>" + branch.name + "</div>"
-      }
-    })
-  }
-
-  const gitHubHandler = new GitHubHandler(owner, repo, token, drawColumns);
-
-  try {
-    gitHubHandler.getBranches()
-      .then(() => gitHubHandler.getPullRequests())
-      .then(() => {drawColumns()})
-    ;
+	const owner = localStorage.getItem('OWNER');
+	const repo = localStorage.getItem('REPO');
+	const token = localStorage.getItem('TOKEN');
 
 
-  } catch (error) {
-    console.log(`Error! Status: ${error.status}. Message: ${error.response.data.message}`)
-  }
+	function clearColumns() {
+		document.getElementById('in-dev').innerHTML = "In Dev | "
+		document.getElementById('review').innerHTML = "Review | "
+		document.getElementById('awaiting-merge').innerHTML = "Awaiting Merge | "
+	}
+
+	function drawColumns() {
+		clearColumns();
+		gitHubHandler.branches.forEach((branch) => {
+			if (branch.location == "DEV") {
+				document.getElementById('in-dev').innerHTML += "<div>" + branch.name + "</div>"
+			} else if (branch.location == "PR") {
+				document.getElementById('review').innerHTML += "<div>" + branch.name + "</div>"
+			} else if (branch.location == "AM") {
+				document.getElementById('awaiting-merge').innerHTML += "<div>" + branch.name + "</div>"
+			}
+		})
+	}
+
+	
+	const gitHubHandler = new GitHubHandler(owner, repo, token);
+	const jiraHandler = new JiraHandler();
+	const dataCombiber = new DataCombiner(jiraHandler, gitHubHandler, drawColumns);
+
+
+	/*
+		Create an map for all items to display on the ticket. 
+			Jira ID is the key to the map
+		Create an Unmapped array for all other Pull Requests
+		Each of these items should have
+			- Link to  Jira Data 
+			- Array of Branches
+	*/
 
 </script>
 </head>

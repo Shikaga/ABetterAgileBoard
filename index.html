@@ -15,33 +15,43 @@
 		document.getElementById('awaiting-merge').innerHTML = "Awaiting Merge | "
 	}
 
+	function drawBranchesFromFilter(task, taskId, filter, elementId) {
+		const branches = task.branches;
+		var devTasks = branches.filter(filter);
+		const isJira = task.taskInfo ? "" : "- No Jira";
+		if (devTasks.length > 0) {
+			document.getElementById(elementId).innerHTML += "<div>" + taskId + "(" + devTasks.length + ")" + isJira + "</div>"
+		}
+	}
+
+	function drawBranchesFromTask(task, taskId) {
+		drawBranchesFromFilter(task, taskId, ((branch) => branch.location === 'DEV'), 'in-dev')
+		drawBranchesFromFilter(task, taskId, ((branch) => branch.location === 'PR'), 'review')
+		drawBranchesFromFilter(task, taskId, ((branch) => branch.location === 'AM'), 'awaiting-merge')
+		//TODO: There is worry here that we could silently lose branches if they are in an unmapped state. We should log if there is a branch that doesn't match any of these filters.
+		
+	}
+
 	function drawColumns() {
 		clearColumns();
-		gitHubHandler.branches.forEach((branch) => {
-			if (branch.location == "DEV") {
-				document.getElementById('in-dev').innerHTML += "<div>" + branch.name + "</div>"
-			} else if (branch.location == "PR") {
-				document.getElementById('review').innerHTML += "<div>" + branch.name + "</div>"
-			} else if (branch.location == "AM") {
-				document.getElementById('awaiting-merge').innerHTML += "<div>" + branch.name + "</div>"
+		dataCombiner.tasks.forEach((task, taskId) => {
+			if (task.branches.length == 0) {
+				document.getElementById('todo').innerHTML += "<div>" + taskId + "</div>"
+			} else {
+				drawBranchesFromTask(task, taskId)
 			}
 		})
+		dataCombiner.unknowns.forEach((unknown) => {
+			document.getElementById('review').innerHTML += "<div>UNKNOWN: " + unknown.name + "</div>"
+		})
+
+		
 	}
 
 	
 	const gitHubHandler = new GitHubHandler(owner, repo, token);
 	const jiraHandler = new JiraHandler();
-	const dataCombiber = new DataCombiner(jiraHandler, gitHubHandler, drawColumns);
-
-
-	/*
-		Create an map for all items to display on the ticket. 
-			Jira ID is the key to the map
-		Create an Unmapped array for all other Pull Requests
-		Each of these items should have
-			- Link to  Jira Data 
-			- Array of Branches
-	*/
+	const dataCombiner = new DataCombiner(jiraHandler, gitHubHandler, drawColumns);
 
 </script>
 </head>

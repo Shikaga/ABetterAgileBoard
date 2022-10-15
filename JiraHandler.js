@@ -1,6 +1,6 @@
 export class JiraHandler {
 	constructor() {
-		this.jiras = []
+		this.tasks = []
 		this.loadCompleteCallback = null;
 	}
 
@@ -12,7 +12,7 @@ export class JiraHandler {
 	loadJiraData() {
 		fetch("./JiraData.json")
 			.then(response => response.json())
-			.then(json => {this.jiras = json.issues})
+			.then(json => {this.tasks = json.issues})
 			.then(() => {this.loadCompleteCallback()});
 	}
 }

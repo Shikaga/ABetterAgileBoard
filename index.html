@@ -47,10 +47,28 @@
 		}
 	}
 
+	function drawDev(task, taskId, filter, elementId, unmatchedElementId) {
+		const branches = task.branches;
+		var devTasks = branches.filter(filter);
+		if (task.taskInfo) {
+			if (devTasks.length > 0) {
+				document.getElementById(elementId).innerHTML += "<div>" + taskId + "(" + devTasks.length + ")</div>"
+			}
+		} else {
+			if (devTasks.length > 0) {
+				document.getElementById(unmatchedElementId).innerHTML += "<div>" + taskId + "(" + devTasks.length + ")</div>"
+			}
+		}
+
+	}
+
 	function drawBranchesFromTask(task, taskId) {
-		drawBranchesFromFilter(task, taskId, ((branch) => branch.location === 'DEV'), 'in-dev')
-		drawBranchesFromFilter(task, taskId, ((branch) => branch.location === 'PR'), 'review')
-		drawBranchesFromFilter(task, taskId, ((branch) => branch.location === 'AM'), 'awaiting-merge')
+		//drawBranchesFromFilter(task, taskId, ((branch) => branch.location === 'DEV'), 'in-dev')
+		drawDev(task, taskId, ((branch) => branch.location === 'DEV'), 'in-dev', 'in-dev-unmatched');
+		drawDev(task, taskId, ((branch) => branch.location === 'PR'), 'review', 'review-unmatched');
+		//drawBranchesFromFilter(task, taskId, ((branch) => branch.location === 'PR'), 'review');
+		drawDev(task, taskId, ((branch) => branch.location === 'AM'), 'awaiting-merge', 'awaiting-merge-unmatched');
+		//drawBranchesFromFilter(task, taskId, ((branch) => branch.location === 'AM'), 'awaiting-merge');
 		//TODO: There is worry here that we could silently lose branches if they are in an unmapped state. We should log if there is a branch that doesn't match any of these filters.
 		
 	}
@@ -65,11 +83,10 @@
 			}
 		})
 		dataCombiner.unknowns.forEach((unknown) => {
-			document.getElementById('review').innerHTML += "<div>UNKNOWN: " + unknown.name + "</div>"
+			document.getElementById('review-unmatched').innerHTML += "<div>UNKNOWN: " + unknown.name + "</div>"
 		})
-
-		
 	}
+
 
 	
 	const gitHubHandler = new GitHubHandler(owner, repo, token);
@@ -77,13 +94,52 @@
 	const dataCombiner = new DataCombiner(jiraHandler, gitHubHandler, drawColumns);
 
 </script>
+<script type="text/javascript">
+	function toggleDisplayUnmatchedDev() {
+		var x = document.getElementById("in-dev-unmatched");
+		if (x.style.display === "none") {
+			x.style.display = "inline";
+		} else {
+			x.style.display = "none";
+		}
+	}
+	function toggleDisplayUnmatchedReview() {
+		var x = document.getElementById("review-unmatched");
+		if (x.style.display === "none") {
+			x.style.display = "inline";
+		} else {
+			x.style.display = "none";
+		}
+	}
+	function toggleDisplayUnmatchedAwaitingMerge() {
+		var x = document.getElementById("awaiting-merge-unmatched");
+		if (x.style.display === "none") {
+			x.style.display = "inline";
+		} else {
+			x.style.display = "none";
+		}
+	}
+</script>
 </head>
 <body>
 	<div class="main">
 		<div id="todo" class="column">Todo</div>
-		<div id="in-dev" class="column">In Dev | </div>
-		<div id="review" class="column"> | </div>
-		<div id="awaiting-merge" class="column">Awaiting Merge</div>
+		<div  class="column">
+			<div id="in-dev">In Dev | </div>
+			<button type="button" onClick="toggleDisplayUnmatchedDev()">Toggle Unmatched</button>
+			<div id="in-dev-unmatched" style="display: none;"></div>
+		</div>
+		<div  class="column">
+			<div id="review">Review | </div>
+			<button type="button" onClick="toggleDisplayUnmatchedReview()">Toggle Unmatched</button>
+			<div id="review-unmatched" style="display: none;"></div>
+		</div>
+		<div  class="column">
+			<div id="awaiting-merge">Awaiting Merge</div>
+			<button type="button" onClick="toggleDisplayUnmatchedAwaitingMerge()">Toggle Unmatched</button>
+			<div id="awaiting-merge-unmatched" style="display: none;"></div>
+		</div>
+
 		<div id="done" class="column">Done</div>
 	</div>
 </body>

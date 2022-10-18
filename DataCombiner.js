@@ -1,18 +1,26 @@
 export class DataCombiner {
-	constructor(taskHandler, sourceHandler, drawColumns) {
+	constructor(taskHandler, sourceHandlers, drawColumns) {
 		this.taskHandler = taskHandler;
-		this.sourceHandler = sourceHandler;
+		this.sourceHandlers = sourceHandlers;
 		this.drawColumns = drawColumns;
 		this.tasks = new Map();
 		this.unknowns = [];
-		this.dataWaiting = 2;
+		this.dataWaiting = 0;
 
-		this.sourceHandler.setCallback(this.sourceDataComplete.bind(this));
+		this.sourceHandlers.forEach((sourceHandler) => {
+			this.dataWaiting++;
+			sourceHandler.setCallback(this.sourceDataComplete.bind(this));
+		});
+
+		
+		this.dataWaiting++;
 		this.taskHandler.setCallback(this.taskDataComplete.bind(this));
 
 		try {
-			this.sourceHandler.getBranches()
-		 		.then(() => this.sourceHandler.getPullRequests())
+			this.sourceHandlers.forEach((sourceHandler) => {
+				sourceHandler.getBranches()
+			 		.then(() => sourceHandler.getPullRequests())
+		 	});
 		 		//.then(() => {drawColumns()})
 		} catch (error) {
 			console.log(`Error! Status: ${error.status}. Message: ${error.response.data.message}`)
@@ -27,6 +35,7 @@ export class DataCombiner {
 	}
 
 	sourceDataComplete() {
+		debugger;
 		this.dataWaiting--;
 		if (this.dataWaiting === 0) {
 			this.updateAllData();
@@ -68,8 +77,11 @@ export class DataCombiner {
 			this.tasks.get(jira.key).taskInfo = jira;
 		})
 
-		this.sourceHandler.branches.forEach((branch) => {
-			this.addBranchToCorrectTask(branch)
+
+		this.sourceHandlers.forEach((sourceHandler) => {
+			sourceHandler.branches.forEach((branch) => {
+				this.addBranchToCorrectTask(branch)
+			})
 		})
 
 

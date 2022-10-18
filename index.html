@@ -29,6 +29,7 @@
 
 	const owner = localStorage.getItem('OWNER');
 	const repo = localStorage.getItem('REPO');
+	const repo2 = localStorage.getItem('REPO2');
 	const token = localStorage.getItem('TOKEN');
 
 
@@ -90,8 +91,9 @@
 
 	
 	const gitHubHandler = new GitHubHandler(owner, repo, token);
+	const gitHubHandler2 = new GitHubHandler(owner, repo2, token);
 	const jiraHandler = new JiraHandler();
-	const dataCombiner = new DataCombiner(jiraHandler, gitHubHandler, drawColumns);
+	const dataCombiner = new DataCombiner(jiraHandler, [gitHubHandler, gitHubHandler2], drawColumns);
 
 </script>
 <script type="text/javascript">

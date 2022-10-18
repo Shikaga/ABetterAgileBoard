@@ -1,4 +1,27 @@
 <head>
+	<style>
+		* {
+		  box-sizing: border-box;
+		}
+
+		/* Create two equal columns that floats next to each other */
+		.column {
+		  float: left;
+		  width: 200px;
+		  padding: 10px;
+		}
+
+		/* Clear floats after the columns */
+		.row:after {
+		  content: "";
+		  display: table;
+		  clear: both;
+		}
+
+		.main {
+			width:  1200px;
+		}
+	</style>
 <script type="module">
 	import { GitHubHandler } from './GitHubHandler.js';
 	import { JiraHandler } from './JiraHandler.js'
@@ -56,14 +79,11 @@
 </script>
 </head>
 <body>
-<div>Hello World!</div>
-<div id='todo'>Todo</div>
-<br />
-<div id='in-dev'>In Dev | </div>
-<br />
-<div id='review'> | </div>
-<br />
-<div id='awaiting-merge'>Awaiting Merge</div>
-<br />
-<div id='done'>Done</div>
+	<div class="main">
+		<div id="todo" class="column">Todo</div>
+		<div id="in-dev" class="column">In Dev | </div>
+		<div id="review" class="column"> | </div>
+		<div id="awaiting-merge" class="column">Awaiting Merge</div>
+		<div id="done" class="column">Done</div>
+	</div>
 </body>

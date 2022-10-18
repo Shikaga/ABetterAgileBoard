@@ -24,6 +24,7 @@
 	</style>
 <script type="module">
 	import { GitHubHandler } from './GitHubHandler.js';
+	import { GitHubClosedHandler } from './GitHubClosedHandler.js';
 	import { JiraHandler } from './JiraHandler.js'
 	import { DataCombiner } from './DataCombiner.js'
 
@@ -69,6 +70,7 @@
 		drawDev(task, taskId, ((branch) => branch.location === 'PR'), 'review', 'review-unmatched');
 		//drawBranchesFromFilter(task, taskId, ((branch) => branch.location === 'PR'), 'review');
 		drawDev(task, taskId, ((branch) => branch.location === 'AM'), 'awaiting-merge', 'awaiting-merge-unmatched');
+		drawDev(task, taskId, ((branch) => branch.location === 'CLOSED'), 'done', 'done-unmatched');
 		//drawBranchesFromFilter(task, taskId, ((branch) => branch.location === 'AM'), 'awaiting-merge');
 		//TODO: There is worry here that we could silently lose branches if they are in an unmapped state. We should log if there is a branch that doesn't match any of these filters.
 		
@@ -86,14 +88,19 @@
 		dataCombiner.unknowns.forEach((unknown) => {
 			document.getElementById('review-unmatched').innerHTML += "<div>UNKNOWN: " + unknown.name + "</div>"
 		})
+		dataCombiner.closedTasks.forEach((closedTask) => {
+			document.getElementById('done').innerHTML += "<div>" + closedTask.title + "</div>"
+		})
 	}
 
 
 	
 	const gitHubHandler = new GitHubHandler(owner, repo, token);
 	const gitHubHandler2 = new GitHubHandler(owner, repo2, token);
+	const gitHubClosedHandler = new GitHubClosedHandler(owner, repo, token);
+	const gitHubClosedHandler2 = new GitHubClosedHandler(owner, repo2, token);
 	const jiraHandler = new JiraHandler();
-	const dataCombiner = new DataCombiner(jiraHandler, [gitHubHandler, gitHubHandler2], drawColumns);
+	const dataCombiner = new DataCombiner(jiraHandler, [gitHubHandler, gitHubHandler2], [gitHubClosedHandler, gitHubClosedHandler2], drawColumns);
 
 </script>
 <script type="text/javascript">
@@ -121,6 +128,14 @@
 			x.style.display = "none";
 		}
 	}
+	function toggleDisplayUnmatchedDone() {
+		var x = document.getElementById("done-unmatched");
+		if (x.style.display === "none") {
+			x.style.display = "inline";
+		} else {
+			x.style.display = "none";
+		}
+	}
 </script>
 </head>
 <body>
@@ -142,6 +157,10 @@
 			<div id="awaiting-merge-unmatched" style="display: none;"></div>
 		</div>
 
-		<div id="done" class="column">Done</div>
+		<div  class="column">
+			<div id="done">Done</div>
+			<button type="button" onClick="toggleDisplayUnmatchedDone()">Toggle Unmatched</button>
+			<div id="done-unmatched" style="display: none;"></div>
+		</div>
 	</div>
 </body>
